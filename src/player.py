@@ -11,10 +11,8 @@ class Player:
         self.radar = Grid()
         if name == "Первый игрок":
             self.board_pos = Parameters.first_player_board_pos
-            self.radar_pos = Parameters.first_player_radar_pos
         else:
             self.board_pos = Parameters.second_player_board_pos
-            self.radar_pos = Parameters.second_player_radar_pos
 
     def place_ship(self, ship: Ship):
         self.fleet.append(ship)

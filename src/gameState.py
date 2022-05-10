@@ -8,12 +8,12 @@ class GameState:
         self.first_player = Player("Первый игрок")
         self.second_player = Player("Второй игрок")
         self.status = "placing"
-        self.queue = self.first_player        #игрок у которого сейчас ход
-        self.defending = self.second_player   #игрок, который ждет хода
+        self.queue = self.first_player  # игрок у которого сейчас ход
+        self.defending = self.second_player  # игрок, который ждет хода
         self.popup = '{}, поставьте корабль'.format(self.queue.name)
         self.size_index = 0
         self.number_of_changes = 0
-        self.waiting = 0
+        self.waiting = False
 
     def place_ship(self, size, pos, orientation):
         temp_ship = Ship(size, pos[0], pos[1], orientation)
@@ -24,30 +24,36 @@ class GameState:
 
     def register_shoot(self, pos):
         if self.defending.grid.grid[pos[0]][pos[1]] == '+':
-            if not self.defending.grid.check_neighbours([pos[0]][pos[1]]):
+            if not self.defending.grid.have_neighbours([pos[0]][pos[1]]):
                 self.popup = "Убил!"
                 ...
             else:
                 self.popup = "Попал!"
             self.queue.radar[pos[0]][pos[1]] = "x"
             self.defending.grid[pos[0]][pos[1]] = "x"
-            return self.defending.grid.check_neighbours([pos[0]][pos[1]])
+            return self.defending.grid.have_neighbours([pos[0]][pos[1]])
         return False
 
     def validate_ship(self, ship):
         if ship.orientation == 'V':
             if ship.y + ship.size > Parameters.sizeofGrid + 1:
                 return False
-            return self.queue.grid.check_neighbours(ship.x, ship.y)
+            for i in range(ship.size):
+                if self.queue.grid.have_neighbours(ship.x, ship.y + i):
+                    return False
+            return True
         elif ship.orientation == 'H':
             if ship.x + ship.size > Parameters.sizeofGrid + 1:
                 return False
-            return self.queue.grid.check_neighbours(ship.x, ship.y)
+            for i in range(ship.size):
+                if self.queue.grid.have_neighbours(ship.x + i, ship.y):
+                    return False
+            return True
 
     def change_queue(self):
         self.number_of_changes += 1
         self.queue, self.defending = self.defending, self.queue
-        self.waiting = 1
+        self.waiting = True
 
     def update(self, pos, orientation):
         if self.waiting:
@@ -71,4 +77,3 @@ class GameState:
             elif self.defending.isDead():
                 self.popup = '{} ВЫИГРАЛ! ПОЗДРАВЛЯЕМ!!!'.format(self.queue.name)
                 self.status = 'end'
-
