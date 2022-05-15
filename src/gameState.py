@@ -13,7 +13,7 @@ class GameState:
         self.popup = '{}, поставьте корабль'.format(self.queue.name)
         self.size_index = 0
         self.number_of_changes = 0
-        self.waiting = False
+        self.pause = False
 
     def place_ship(self, size, pos, orientation):
         temp_ship = Ship(size, pos[0], pos[1], orientation)
@@ -23,15 +23,16 @@ class GameState:
             self.size_index += 1
 
     def register_shoot(self, pos):
-        if self.defending.grid.grid[pos[0]][pos[1]] == '+':
-            if not self.defending.grid.have_neighbours([pos[0]][pos[1]]):
-                self.popup = "Убил!"
-                ...
+        if self.defending.grid.grid[pos[0]][pos[1]] == 'ship':
+            if not self.defending.grid.have_neighbours(pos[0], pos[1]):
+                self.popup = "Убил! Стреляйте ещё!"
             else:
-                self.popup = "Попал!"
-            self.queue.radar[pos[0]][pos[1]] = "x"
-            self.defending.grid[pos[0]][pos[1]] = "x"
-            return self.defending.grid.have_neighbours([pos[0]][pos[1]])
+                self.popup = "Попал! Стреляйте ещё!"
+            self.queue.radar.grid[pos[0]][pos[1]] = 'marked'
+            self.defending.grid.grid[pos[0]][pos[1]] = 'marked'
+            return True
+        self.queue.radar.grid[pos[0]][pos[1]] = 'checked'
+        self.defending.grid.grid[pos[0]][pos[1]] = 'checked'
         return False
 
     def validate_ship(self, ship):
@@ -53,24 +54,38 @@ class GameState:
     def change_queue(self):
         self.number_of_changes += 1
         self.queue, self.defending = self.defending, self.queue
-        self.waiting = True
+
+    def set_pause(self):
+        self.pause = True
+        self.popup = "Нажмите на стрелку вправо чтобы сменить ход"
+
+    def unset_pause(self):
+        if not (self.popup == "Попал!" or self.popup == "Убил!"):
+            self.change_queue()
+        self.pause = False
+        if self.status == "placing":
+            self.popup = '{}, поставьте корабль'.format(self.queue.name)
+        if self.number_of_changes >= 2:
+            self.status = "shooting"
+            self.popup = '{}, стреляйте по своему радару!'.format(self.queue.name)
 
     def update(self, pos, orientation):
-        if self.waiting:
-            self.popup = "Введите любую клавишу чтобы продолжить"
         if self.status == "placing":
+            if self.size_index >= len(Parameters.ship_size):
+                self.set_pause()
+                self.size_index = 0
+                return
+            self.popup = '{}, поставьте корабль'.format(self.queue.name)
             size = Parameters.ship_size[self.size_index]
             self.place_ship(size, pos, orientation=orientation)
             if self.size_index >= len(Parameters.ship_size):
-                self.change_queue()
+                self.set_pause()
                 self.size_index = 0
-            self.popup = '{}, поставьте корабль'.format(self.queue.name)
-            if self.number_of_changes == 2:
-                self.status = "shooting"
-        if self.status == "shooting":
+                return
+        elif self.status == "shooting":
             self.popup = '{}, стреляйте по своему радару!'.format(self.queue.name)
             if not self.register_shoot(pos):
-                self.queue, self.defending = self.defending, self.queue
+                self.set_pause()
             if self.queue.isDead():
                 self.popup = '{} ВЫИГРАЛ! ПОЗДРАВЛЯЕМ!!!'.format(self.defending.name)
                 self.status = 'end'

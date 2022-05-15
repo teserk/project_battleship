@@ -18,14 +18,16 @@ class Player:
         self.fleet.append(ship)
 
     def isDead(self):
-        if not self.fleet:
-            return True
-        return False
+        for row in self.grid.grid:
+            for column in row:
+                if column == 'ship':
+                    return False
+        return True
 
     def update_grid(self):
         for ship in self.fleet:
             for i in range(ship.size):
                 if ship.orientation == 'H':
-                    self.grid.grid[ship.x + i][ship.y] = '+'
+                    self.grid.grid[ship.x + i][ship.y] = 'ship'
                 else:
-                    self.grid.grid[ship.x][ship.y + i] = '+'
+                    self.grid.grid[ship.x][ship.y + i] = 'ship'
