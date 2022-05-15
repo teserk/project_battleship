@@ -13,7 +13,7 @@ class UserInterface:
         self.orientation = 'H'
         self.mouse_pos = (None, None)
         self.shooting_coords = (None, None)
-        self.window = pygame.display.set_mode((self.windowwidth, self.windowheight))
+        self.window = pygame.display.set_mode((Parameters.windowwidth, Parameters.windowheight))
 
     def processInput(self):
         for event in pygame.event.get():
