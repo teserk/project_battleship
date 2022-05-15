@@ -13,7 +13,7 @@ class UserInterface:
         self.orientation = 'H'
         self.mouse_pos = (None, None)
         self.shooting_coords = (None, None)
-        window = pygame.display.set_mode((Parameters.windowwidth, Parameters.windowheight))
+        self.window = pygame.display.set_mode((self.windowwidth, self.windowheight))
 
     def processInput(self):
         for event in pygame.event.get():
@@ -41,7 +41,7 @@ class UserInterface:
                         self.orientation = 'H'
 
     def render(self):
-        Parameters.window.fill(Parameters.GRAY)
+        self.window.fill(Parameters.GRAY)
         if self.gameState.pause:
             self.draw_grid(self.gameState.defending, self.gameState.queue.grid)
             self.draw_grid(self.gameState.queue, self.gameState.queue.radar)
@@ -75,7 +75,7 @@ class UserInterface:
                             1 + self.gameState.queue.board_pos[1] + self.mouse_pos[1] * Parameters.tilesize,
                             Parameters.tilesize - 2,
                             Parameters.tilesize - 2)
-                    pygame.draw.rect(Parameters.window, color, rect)
+                    pygame.draw.rect(self.window, color, rect)
             else:
                 for i in range(Parameters.ship_size[self.gameState.size_index]):
                     rect = (1 + self.gameState.queue.board_pos[0] + self.mouse_pos[0] * Parameters.tilesize,
@@ -83,13 +83,13 @@ class UserInterface:
                             * Parameters.tilesize,
                             Parameters.tilesize - 2,
                             Parameters.tilesize - 2)
-                    pygame.draw.rect(Parameters.window, color, rect)
+                    pygame.draw.rect(self.window, color, rect)
         else:
             rect = (self.gameState.queue.board_pos[0] + self.mouse_pos[0] * Parameters.tilesize,
                     self.gameState.queue.board_pos[1] + self.mouse_pos[1] * Parameters.tilesize,
                     Parameters.tilesize,
                     Parameters.tilesize)
-            pygame.draw.rect(Parameters.window, (255, 0, 0, 50), rect, 2)
+            pygame.draw.rect(self.window, (255, 0, 0, 50), rect, 2)
 
     def update(self):
         if self.shooting_coords[0] is not None and not self.gameState.pause:
@@ -126,7 +126,7 @@ class UserInterface:
     def show_popup(self):
         font1 = pygame.font.SysFont('Comic Sans MS', 48)
         text = font1.render(self.gameState.popup, False, Parameters.WHITE)
-        Parameters.window.blit(text, Parameters.popup_pos)
+        self.window.blit(text, Parameters.popup_pos)
 
     def draw_grid(self, player, board):
         for i in range(100):
@@ -144,5 +144,5 @@ class UserInterface:
             else:
                 color = Parameters.WHITE
             square = pygame.Rect(x, y, Parameters.tilesize, Parameters.tilesize)
-            pygame.draw.rect(Parameters.window, color, square)
-            pygame.draw.rect(Parameters.window, Parameters.BLACK, square, width=2)
+            pygame.draw.rect(self.window, color, square)
+            pygame.draw.rect(self.window, Parameters.BLACK, square, width=2)
